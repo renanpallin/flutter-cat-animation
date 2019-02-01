@@ -9,6 +9,7 @@ class Home extends StatefulWidget {
 class HomeState extends State<Home> with TickerProviderStateMixin {
   Animation<double> catAnimation;
   AnimationController catController;
+  bool _isGoing = false;
 
   @override
   void initState() {
@@ -27,12 +28,21 @@ class HomeState extends State<Home> with TickerProviderStateMixin {
     );
   }
 
-  onTap() {
-    if (catController.status == AnimationStatus.completed)
-      return catController.reverse();
+  onTap() async {
+//    print('$_isGoing: ${catController.status}');
 
-    if (catController.status == AnimationStatus.dismissed)
-      return catController.forward();
+    if (_isGoing) {
+      _isGoing = false;
+      return catController.stop();
+    }
+
+    _isGoing = true;
+    if ([AnimationStatus.completed, AnimationStatus.reverse]
+        .contains(catController.status)) await catController.reverse();
+
+    if ([AnimationStatus.dismissed, AnimationStatus.forward]
+        .contains(catController.status)) await catController.forward();
+    _isGoing = false;
   }
 
   @override
