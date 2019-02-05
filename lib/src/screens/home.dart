@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/cat.dart';
+import 'dart:math';
 
 class Home extends StatefulWidget {
   @override
@@ -9,18 +10,33 @@ class Home extends StatefulWidget {
 class HomeState extends State<Home> with TickerProviderStateMixin {
   Animation<double> catAnimation;
   AnimationController catController;
-  bool _isGoing = false;
+
+  Animation<double> boxAnimation;
+  AnimationController boxController;
 
   @override
   void initState() {
     super.initState();
 
-    catController = AnimationController(
+//    boxController = Animation();
+    boxController = AnimationController(
       duration: Duration(seconds: 2),
       vsync: this,
     );
 
-    catAnimation = Tween(begin: 0.0, end: 200.0).animate(
+    boxAnimation = Tween(begin: 0.0, end: pi).animate(
+      CurvedAnimation(
+        parent: boxController,
+        curve: Curves.linear,
+      ),
+    );
+
+    catController = AnimationController(
+      duration: Duration(milliseconds: 200),
+      vsync: this,
+    );
+
+    catAnimation = Tween(begin: -35.0, end: -80.0).animate(
       CurvedAnimation(
         parent: catController,
         curve: Curves.easeIn,
@@ -29,20 +45,11 @@ class HomeState extends State<Home> with TickerProviderStateMixin {
   }
 
   onTap() async {
-//    print('$_isGoing: ${catController.status}');
+    if (catController.status == AnimationStatus.completed)
+      catController.reverse();
 
-    if (_isGoing) {
-      _isGoing = false;
-      return catController.stop();
-    }
-
-    _isGoing = true;
-    if ([AnimationStatus.completed, AnimationStatus.reverse]
-        .contains(catController.status)) await catController.reverse();
-
-    if ([AnimationStatus.dismissed, AnimationStatus.forward]
-        .contains(catController.status)) await catController.forward();
-    _isGoing = false;
+    if (catController.status == AnimationStatus.dismissed)
+      catController.forward();
   }
 
   @override
@@ -63,7 +70,9 @@ class HomeState extends State<Home> with TickerProviderStateMixin {
             children: <Widget>[
               buildCatAnimation(),
               buildBox(),
+              buildLeftFlap(),
             ],
+            overflow: Overflow.visible,
           ),
         ),
         onTap: onTap,
@@ -102,9 +111,11 @@ class HomeState extends State<Home> with TickerProviderStateMixin {
        */
       builder: (context, child) {
 //        print('catAnimation: ${catAnimation.value}');
-        return Container(
+        return Positioned(
           child: child,
-          margin: EdgeInsets.only(top: catAnimation.value),
+          top: catAnimation.value,
+          left: 0.0,
+          right: 0.0,
         );
       },
       child: Cat(),
@@ -116,6 +127,23 @@ class HomeState extends State<Home> with TickerProviderStateMixin {
       height: 200,
       width: 200,
       color: Colors.brown,
+    );
+  }
+
+  Widget buildLeftFlap() {
+    Widget flap = Container(
+      height: 10.0,
+      width: 125.0,
+      color: Colors.brown,
+    );
+
+    return Positioned(
+      left: 3.0,
+      child: Transform.rotate(
+        alignment: Alignment.topLeft,
+        angle: pi * .6,
+        child: flap,
+      ),
     );
   }
 }
